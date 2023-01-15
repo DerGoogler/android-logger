@@ -1,4 +1,6 @@
 const { __native_logger } = require('bindings')('__native_logger')
+const { Transform } = require('stream')
+const { Console } = require('console')
 
 class Logger extends __native_logger {
 	_opt = undefined
@@ -65,6 +67,29 @@ class Logger extends __native_logger {
 		if (!tag || !data) throw new Error('Tag or message is undefined')
 		super.w(tag, data)
 	}
+
+	table(tag, data) {
+		if (!tag || !data) throw new Error('Tag or message is undefined')
+		const ts = new Transform({
+			transform(chunk, enc, cb) {
+				cb(null, chunk);
+			},
+		});
+		const logger = new Console({ stdout: ts });
+		logger.table(data);
+		const table = (ts.read() || "").toString();
+		let result = "";
+		for (let row of table.split(/[\r\n]+/)) {
+			let r = row.replace(/[^┬]*┬/, "┌");
+			r = r.replace(/^├─*┼/, "├");
+			r = r.replace(/│[^│]*/, "");
+			r = r.replace(/^└─*┴/, "└");
+			r = r.replace(/'/g, " ");
+			result += `${r}\n`;
+		}
+		super.i(tag, result)
+	}
+
 }
 
 module.exports = Logger
