@@ -37,7 +37,34 @@ class Logger extends __native_logger {
 		if (!tag || !data) throw new Error('Tag or message is undefined')
 		super.w(tag, data)
 	}
-}
 
+	debug(tag, data) {
+		if (!tag || !data) throw new Error('Tag or message is undefined')
+		// Log only if debug has been enabled
+		if (this._opt.debug) {
+			super.d(tag, data)
+		}
+	}
+
+	error(tag, data) {
+		if (!tag || !data) throw new Error('Tag or message is undefined')
+		super.e(tag, data)
+	}
+
+	info(tag, data) {
+		if (!tag || !data) throw new Error('Tag or message is undefined')
+		super.i(tag, data)
+	}
+
+	verbose(tag, data) {
+		if (!tag || !data) throw new Error('Tag or message is undefined')
+		super.v(tag, data)
+	}
+
+	warn(tag, data) {
+		if (!tag || !data) throw new Error('Tag or message is undefined')
+		super.w(tag, data)
+	}
+}
 
 module.exports = Logger
