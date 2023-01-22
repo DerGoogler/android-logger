@@ -1,95 +1,25 @@
-const { __native_logger } = require('bindings')('__native_logger')
-const { Transform } = require('stream')
-const { Console } = require('console')
-
-class Logger extends __native_logger {
-	_opt = undefined
-
-	constructor(opt) {
-		super(0)
-		this._opt = opt || {
-			debug: false
-		}
-	}
-
-	d(tag, data) {
-		if (!tag || !data) throw new Error('Tag or message is undefined')
-		// Log only if debug has been enabled
-		if (this._opt.debug) {
-			super.d(tag, data)
-		}
-	}
-
-	e(tag, data) {
-		if (!tag || !data) throw new Error('Tag or message is undefined')
-		super.e(tag, data)
-	}
-
-	i(tag, data) {
-		if (!tag || !data) throw new Error('Tag or message is undefined')
-		super.i(tag, data)
-	}
-
-	v(tag, data) {
-		if (!tag || !data) throw new Error('Tag or message is undefined')
-		super.v(tag, data)
-	}
-
-	w(tag, data) {
-		if (!tag || !data) throw new Error('Tag or message is undefined')
-		super.w(tag, data)
-	}
-
-	debug(tag, data) {
-		if (!tag || !data) throw new Error('Tag or message is undefined')
-		// Log only if debug has been enabled
-		if (this._opt.debug) {
-			super.d(tag, data)
-		}
-	}
-
-	error(tag, data) {
-		if (!tag || !data) throw new Error('Tag or message is undefined')
-		super.e(tag, data)
-	}
-
-	info(tag, data) {
-		if (!tag || !data) throw new Error('Tag or message is undefined')
-		super.i(tag, data)
-	}
-
-	verbose(tag, data) {
-		if (!tag || !data) throw new Error('Tag or message is undefined')
-		super.v(tag, data)
-	}
-
-	warn(tag, data) {
-		if (!tag || !data) throw new Error('Tag or message is undefined')
-		super.w(tag, data)
-	}
-
-	table(tag, data) {
-		if (!tag || !data) throw new Error('Tag or message is undefined')
-		const ts = new Transform({
-			transform(chunk, enc, cb) {
-				cb(null, chunk);
-			},
-		});
-		const logger = new Console({ stdout: ts });
-		logger.table(data);
-		const table = (ts.read() || "").toString();
-		let result = "";
-		for (let row of table.split(/[\r\n]+/)) {
-			let r = row.replace(/[^┬]*┬/, "┌");
-			r = r.replace(/^├─*┼/, "├");
-			r = r.replace(/│[^│]*/, "");
-			r = r.replace(/^└─*┴/, "└");
-			r = r.replace(/'/g, " ");
-			result += `${r}\n`;
-		}
-		super.i(tag, result)
-	}
-
+const { __android_log_write } = require("./build/Release/__native_log.node");
+const util = require("util");
+class Log {
+  static VERBOSE = 2;
+  static DEBUG = 3;
+  static INFO = 4;
+  static WARN = 5;
+  static ERROR = 6;
+  static v(tag, msg, ...data) {
+    __android_log_write(this.VERBOSE, String(tag), util.format(msg, ...data));
+  }
+  static d(tag, msg, ...data) {
+    __android_log_write(this.DEBUG, String(tag), util.format(msg, ...data));
+  }
+  static i(tag, msg, ...data) {
+    __android_log_write(this.INFO, String(tag), util.format(msg, ...data));
+  }
+  static w(tag, msg, ...data) {
+    __android_log_write(this.WARN, String(tag), util.format(msg, ...data));
+  }
+  static e(tag, msg, ...data) {
+    __android_log_write(this.ERROR, String(tag), util.format(msg, ...data));
+  }
 }
-
-module.exports = Logger
+module.exports = Log;
